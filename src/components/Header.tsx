@@ -1,17 +1,15 @@
-// components/Header.tsx
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LoginModal } from '@/components/model/LoginModal';
 
 type HeaderProps = {
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  onOpenLogin: () => void;
 };
 
-const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
+const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const navItems = [
     { name: 'Home', href: '#home' },
@@ -33,15 +31,6 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
     setIsMenuOpen(false);
   };
 
-  const handleLogin = (memberId: string, password: string) => {
-    if (memberId === '1002' && password === 'password') {
-      setIsLoggedIn(true);
-      setShowLoginModal(false);
-    } else {
-      alert('Invalid Member ID or Password');
-    }
-  };
-
   const handleLogout = () => {
     setIsLoggedIn(false);
     setIsMenuOpen(false);
@@ -50,16 +39,13 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b shadow-elegant bg-[#befae9]/30 backdrop-blur-xl backdrop-saturate-150">
       <div className="container mx-auto px-4">
-        {/* University Header with Left and Right Logos */}
+        {/* Top Bar */}
         <div className="py-4 border-b flex items-center justify-between">
-          {/* Left Logo */}
           <img
-            src="/public/images/Club-logo.png"
+            src="/images/Club-logo.png"
             alt="Left Logo"
             className="h-12 w-auto object-contain hidden sm:block"
           />
-
-          {/* Center Title */}
           <div className="text-center flex-1">
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mid Day Programming Club
@@ -68,10 +54,8 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
               Jatiya Kabi Kazi Nazrul Islam University, Trishal, Mymensingh
             </p>
           </div>
-
-          {/* Right Logo */}
           <img
-            src="/public/images/Jkkniu.webp"
+            src="/images/Jkkniu.webp"
             alt="Right Logo"
             className="h-12 w-auto object-contain hidden sm:block"
           />
@@ -80,7 +64,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
         {/* Navigation */}
         <nav className="py-4">
           <div className="flex items-center justify-between">
-            {/* Desktop Navigation */}
+            {/* Desktop Nav */}
             <div className="hidden lg:flex items-center justify-center flex-1">
               <div className="flex items-center space-x-6">
                 {navItems.map((item) => (
@@ -96,7 +80,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
               </div>
             </div>
 
-            {/* Login/Logout */}
+            {/* Desktop Auth Buttons */}
             <div className="hidden lg:flex">
               {isLoggedIn ? (
                 <Button
@@ -112,7 +96,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => setShowLoginModal(true)}
+                  onClick={onOpenLogin}
                   className="flex items-center gap-2"
                 >
                   <User className="h-4 w-4" />
@@ -135,7 +119,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
             </button>
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Nav */}
           {isMenuOpen && (
             <div className="lg:hidden mt-4 space-y-4 pb-4 border-t pt-4">
               {navItems.map((item) => (
@@ -162,7 +146,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => setShowLoginModal(true)}
+                  onClick={onOpenLogin}
                   className="flex items-center gap-2 mt-4"
                 >
                   <User className="h-4 w-4" />
@@ -173,15 +157,6 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
           )}
         </nav>
       </div>
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onLogin={handleLogin}
-        />
-      )}
     </header>
   );
 };

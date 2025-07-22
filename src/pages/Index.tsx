@@ -10,13 +10,29 @@ import ContestsSection from '@/components/ContestsSection';
 import GallerySection from '@/components/GallerySection';
 import NoticeSection from '@/components/NoticeSection';
 import Footer from '@/components/Footer';
+import { LoginModal } from '@/components/model/LoginModal';
+import { SignUpModal } from '@/components/model/SignUpModal';
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+
+  const handleLogin = (email: string, password: string, role: string) => {
+    // Simple dummy auth logic
+    console.log('Logging in:', { email, password, role });
+    setIsLoggedIn(true);
+    setIsLoginOpen(false);
+  };
 
   return (
     <div className="min-h-screen">
-      <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Header
+        isLoggedIn={isLoggedIn}
+        setIsLoggedIn={setIsLoggedIn}
+        onOpenLogin={() => setIsLoginOpen(true)}
+      />
+
       <HeroSection />
       <AboutSection />
       <ProudMentionsSection />
@@ -24,12 +40,26 @@ const Index = () => {
       <GeneralMembersSection />
       <AchievementsSection />
 
-      {/* Show contests only if logged in */}
       {isLoggedIn && <ContestsSection />}
 
       <GallerySection />
       <NoticeSection />
       <Footer />
+
+      {/* Modals */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onLogin={handleLogin}
+        onOpenSignUp={() => {
+          setIsLoginOpen(false);
+          setIsSignUpOpen(true);
+        }}
+      />
+      <SignUpModal
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+      />
     </div>
   );
 };

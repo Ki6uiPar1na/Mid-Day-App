@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, LogIn, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +42,17 @@ export function LoginModal({
   const [selectedRole, setSelectedRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    // Prevent background scroll when modal is open
+    if (isOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !selectedRole) return;
 
@@ -50,7 +60,6 @@ export function LoginModal({
     setTimeout(() => {
       onLogin(email, password, selectedRole);
       setIsLoading(false);
-      onClose();
       setEmail('');
       setPassword('');
       setSelectedRole('');
@@ -60,23 +69,24 @@ export function LoginModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md card-glow">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md bg-white/10 backdrop-blur-xl text-white border border-white/20 shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold bg-gradient-primary from-primary to-secondary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Club Login
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 text-white"
+              aria-label="Close login modal"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-white/80">
             Access your club dashboard and exclusive content
           </p>
         </CardHeader>
@@ -85,18 +95,18 @@ export function LoginModal({
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="mb-1 block">
+              <Label htmlFor="email" className="mb-1 block text-white">
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="your.email@jkkniu.edu.bd"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white/20 text-white placeholder:text-white/60"
                   required
                 />
               </div>
@@ -104,18 +114,18 @@ export function LoginModal({
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="mb-1 block">
+              <Label htmlFor="password" className="mb-1 block text-white">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white/20 text-white placeholder:text-white/60"
                   required
                 />
               </div>
@@ -123,16 +133,16 @@ export function LoginModal({
 
             {/* Role */}
             <div>
-              <Label htmlFor="role" className="mb-1 block">
+              <Label htmlFor="role" className="mb-1 block text-white">
                 Role
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 z-10" />
                 <Select value={selectedRole} onValueChange={setSelectedRole} required>
-                  <SelectTrigger className="pl-10">
+                  <SelectTrigger className="pl-10 bg-white/20 text-white">
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white text-black">
                     {userRoles.map((role) => (
                       <SelectItem key={role.value} value={role.value}>
                         {role.label}
@@ -146,12 +156,12 @@ export function LoginModal({
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full btn-hero"
+              className="w-full bg-primary hover:bg-primary/80 text-white"
               disabled={isLoading || !email || !password || !selectedRole}
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                   <span>Signing in...</span>
                 </div>
               ) : (
@@ -165,9 +175,9 @@ export function LoginModal({
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/80">
               Need an account?{' '}
-              <Button variant="./SignUpModal" className="p-0 h-auto text-primary" onClick={onOpenSignUp}>
+              <Button variant="link" className="p-0 h-auto text-primary" onClick={onOpenSignUp}>
                 Sign up
               </Button>
             </p>
