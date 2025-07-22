@@ -1,102 +1,152 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { X } from 'lucide-react';
-import { Fragment, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react'
+import { X, LogIn, Mail, Lock, User } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  onLogin: (memberId: string, password: string) => void;
-};
+interface LoginModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onLogin: (email: string, password: string, role: string) => void
+}
 
-const LoginModal = ({ isOpen, onClose, onLogin }: Props) => {
-  const [memberId, setMemberId] = useState('');
-  const [password, setPassword] = useState('');
+const userRoles = [
+  { value: 'general', label: 'General Member' },
+  { value: 'executive', label: 'Executive' },
+  { value: 'senior-executive', label: 'Senior Executive' },
+  { value: 'proud-member', label: 'Proud Mention Member' }
+]
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onLogin(memberId, password);
-  };
+export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [selectedRole, setSelectedRole] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password || !selectedRole) return
+
+    setIsLoading(true)
+    // Simulate API call
+    setTimeout(() => {
+      onLogin(email, password, selectedRole)
+      setIsLoading(false)
+      onClose()
+      setEmail('')
+      setPassword('')
+      setSelectedRole('')
+    }, 1000)
+  }
+
+  if (!isOpen) return null
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0 backdrop-blur-0"
-          enterTo="opacity-100 backdrop-blur-md"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100 backdrop-blur-md"
-          leaveTo="opacity-0 backdrop-blur-0"
-        >
-          <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0 scale-95 translate-y-4"
-            enterTo="opacity-100 scale-100 translate-y-0"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100 scale-100 translate-y-0"
-            leaveTo="opacity-0 scale-95 translate-y-4"
-          >
-            <Dialog.Panel className="relative w-full max-w-md rounded-2xl bg-white/40 border border-white/40 backdrop-blur-xl shadow-elegant p-8 text-white drop-shadow-lg">
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-4 rounded-full p-1 hover:bg-white/30 transition"
-                aria-label="Close"
-              >
-                <X className="h-6 w-6" />
-              </button>
-
-              <Dialog.Title className="text-3xl font-extrabold text-center mb-6 select-none drop-shadow-md">
-                Member Login
-              </Dialog.Title>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <input
-                  type="text"
-                  placeholder="Member ID"
-                  value={memberId}
-                  onChange={(e) => setMemberId(e.target.value)}
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md card-glow">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Club Login
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-muted-foreground">
+            Access your club dashboard and exclusive content
+          </p>
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your.email@jkkniu.edu.bd"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
                   required
-                  autoFocus
-                  className="w-full rounded-md bg-white/90 px-4 py-3 placeholder-white/80 text-gray-900 font-semibold outline-none focus:ring-4 focus:ring-primary transition shadow-md"
                 />
-                <input
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
                   required
-                  className="w-full rounded-md bg-white/90 px-4 py-3 placeholder-white/80 text-gray-900 font-semibold outline-none focus:ring-4 focus:ring-primary transition shadow-md"
                 />
-
-                <Button type="submit" className="w-full py-3 text-lg font-bold shadow-lg">
-                  Login
-                </Button>
-              </form>
-
-              <p className="mt-8 text-center text-base text-white/90 select-none drop-shadow">
-                No account?{' '}
-                <a
-                  href="mailto:admin@example.com"
-                  className="text-primary underline hover:text-primary-glow transition font-semibold"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Contact Admin
-                </a>
-              </p>
-            </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Dialog>
-    </Transition>
-  );
-};
-
-export default LoginModal;
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                <Select value={selectedRole} onValueChange={setSelectedRole} required>
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userRoles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <Button
+              type="submit"
+              className="w-full btn-hero"
+              disabled={isLoading || !email || !password || !selectedRole}
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Signing in...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <LogIn className="h-4 w-4" />
+                  <span>Sign In</span>
+                </div>
+              )}
+            </Button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Need an account?{' '}
+              <Button variant="link" className="p-0 h-auto text-primary">
+                Contact Club Administrator
+              </Button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
