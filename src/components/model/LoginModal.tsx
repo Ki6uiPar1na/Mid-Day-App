@@ -21,6 +21,7 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogin: (email: string, password: string, role: string) => void;
+  onOpenSignUp: () => void;
 }
 
 const userRoles = [
@@ -30,7 +31,12 @@ const userRoles = [
   { value: 'proud-member', label: 'Proud Mention Member' }
 ];
 
-export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
+export function LoginModal({
+  isOpen,
+  onClose,
+  onLogin,
+  onOpenSignUp
+}: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
@@ -157,12 +163,12 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
             </Button>
           </form>
 
-          {/* Contact Admin */}
+          {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Need an account?{' '}
-              <Button variant="link" className="p-0 h-auto text-primary">
-                Contact Club Administrator
+              <Button variant="./SignUpModal" className="p-0 h-auto text-primary" onClick={onOpenSignUp}>
+                Sign up
               </Button>
             </p>
           </div>
