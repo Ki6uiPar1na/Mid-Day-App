@@ -1,10 +1,17 @@
+// components/Header.tsx
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import LoginModal from '@/components/model/LoginModal';
 
-const Header = () => {
+type HeaderProps = {
+  isLoggedIn: boolean;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const navItems = [
     { name: 'Home', href: '#home' },
@@ -26,8 +33,23 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  // Hardcoded login check
+  const handleLogin = (memberId: string, password: string) => {
+    if (memberId === '1002' && password === 'password') {
+      setIsLoggedIn(true);
+      setShowLoginModal(false);
+    } else {
+      alert('Invalid Member ID or Password');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsMenuOpen(false);
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b shadow-elegant">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-primary-foreground/70 backdrop-blur-sm border-b shadow-elegant">
       <div className="container mx-auto px-4">
         {/* University Header */}
         <div className="text-center py-4 border-b">
@@ -60,32 +82,40 @@ const Header = () => {
 
             {/* Login/Logout - Right */}
             <div className="hidden lg:flex">
-              <Button
-                variant={isLoggedIn ? "outline" : "default"}
-                size="sm"
-                onClick={() => setIsLoggedIn(!isLoggedIn)}
-                className="flex items-center gap-2"
-              >
-                {isLoggedIn ? (
-                  <>
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </>
-                ) : (
-                  <>
-                    <User className="h-4 w-4" />
-                    Login
-                  </>
-                )}
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Login
+                </Button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
             <button
               className="lg:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
 
@@ -101,28 +131,42 @@ const Header = () => {
                   {item.name}
                 </button>
               ))}
-              <Button
-                variant={isLoggedIn ? "outline" : "default"}
-                size="sm"
-                onClick={() => setIsLoggedIn(!isLoggedIn)}
-                className="flex items-center gap-2 mt-4"
-              >
-                {isLoggedIn ? (
-                  <>
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </>
-                ) : (
-                  <>
-                    <User className="h-4 w-4" />
-                    Login
-                  </>
-                )}
-              </Button>
+
+              {/* Mobile Login/Logout buttons */}
+              {isLoggedIn ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 mt-4"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-2 mt-4"
+                >
+                  <User className="h-4 w-4" />
+                  Login
+                </Button>
+              )}
             </div>
           )}
         </nav>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onLogin={handleLogin}
+        />
+      )}
     </header>
   );
 };

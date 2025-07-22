@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
@@ -11,16 +12,21 @@ import NoticeSection from '@/components/NoticeSection';
 import Footer from '@/components/Footer';
 
 const Index = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <HeroSection />
       <AboutSection />
       <ProudMentionsSection />
       <ExecutivesSection />
       <GeneralMembersSection />
       <AchievementsSection />
-      <ContestsSection />
+
+      {/* Show contests only if logged in */}
+      {isLoggedIn && <ContestsSection />}
+
       <GallerySection />
       <NoticeSection />
       <Footer />
