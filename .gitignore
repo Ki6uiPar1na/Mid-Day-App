@@ -26,5 +26,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Supabase client config containing keys
-supabaseClient.ts
+# Supabase client config containing secrets
+/src/lib/supabaseClient.ts
