@@ -6,9 +6,11 @@ type HeaderProps = {
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   onOpenLogin: () => void;
+  onLogout: () => void;        // Added onLogout here
+  userEmail?: string;          // Optional user email to display
 };
 
-const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin }: HeaderProps) => {
+const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -32,7 +34,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin }: HeaderProps) => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    onLogout();
     setIsMenuOpen(false);
   };
 
@@ -53,6 +55,9 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin }: HeaderProps) => {
             <p className="text-sm text-muted-foreground mt-1">
               Jatiya Kabi Kazi Nazrul Islam University, Trishal, Mymensingh
             </p>
+            {isLoggedIn && userEmail && (
+              <p className="text-sm text-white/70 mt-1">Welcome, {userEmail}</p>
+            )}
           </div>
           <img
             src="/images/Jkkniu.webp"
