@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import LoginModal from '@/components/model/LoginModal';
+import { LoginModal } from '@/components/model/LoginModal';
 
 type HeaderProps = {
   isLoggedIn: boolean;
@@ -33,7 +33,6 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
     setIsMenuOpen(false);
   };
 
-  // Hardcoded login check
   const handleLogin = (memberId: string, password: string) => {
     if (memberId === '1002' && password === 'password') {
       setIsLoggedIn(true);
@@ -49,22 +48,39 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-primary-foreground/70 backdrop-blur-sm border-b shadow-elegant">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b shadow-elegant bg-[#befae9]/30 backdrop-blur-xl backdrop-saturate-150">
       <div className="container mx-auto px-4">
-        {/* University Header */}
-        <div className="text-center py-4 border-b">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Mid Day Programming Club
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Jatiya Kabi Kazi Nazrul Islam University, Trishal, Mymensingh
-          </p>
+        {/* University Header with Left and Right Logos */}
+        <div className="py-4 border-b flex items-center justify-between">
+          {/* Left Logo */}
+          <img
+            src="/public/images/Club-logo.png"
+            alt="Left Logo"
+            className="h-12 w-auto object-contain hidden sm:block"
+          />
+
+          {/* Center Title */}
+          <div className="text-center flex-1">
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Mid Day Programming Club
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Jatiya Kabi Kazi Nazrul Islam University, Trishal, Mymensingh
+            </p>
+          </div>
+
+          {/* Right Logo */}
+          <img
+            src="/public/images/Jkkniu.webp"
+            alt="Right Logo"
+            className="h-12 w-auto object-contain hidden sm:block"
+          />
         </div>
 
         {/* Navigation */}
         <nav className="py-4">
           <div className="flex items-center justify-between">
-            {/* Desktop Navigation - Center */}
+            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center justify-center flex-1">
               <div className="flex items-center space-x-6">
                 {navItems.map((item) => (
@@ -80,7 +96,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
               </div>
             </div>
 
-            {/* Login/Logout - Right */}
+            {/* Login/Logout */}
             <div className="hidden lg:flex">
               {isLoggedIn ? (
                 <Button
@@ -105,11 +121,11 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
               className="lg:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
+              aria-label="Toggle Menu"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -132,7 +148,6 @@ const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
                 </button>
               ))}
 
-              {/* Mobile Login/Logout buttons */}
               {isLoggedIn ? (
                 <Button
                   variant="outline"

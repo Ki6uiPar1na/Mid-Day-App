@@ -1,15 +1,26 @@
-import { useState } from 'react'
-import { X, LogIn, Mail, Lock, User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState } from 'react';
+import { X, LogIn, Mail, Lock, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 interface LoginModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onLogin: (email: string, password: string, role: string) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onLogin: (email: string, password: string, role: string) => void;
 }
 
 const userRoles = [
@@ -17,31 +28,30 @@ const userRoles = [
   { value: 'executive', label: 'Executive' },
   { value: 'senior-executive', label: 'Senior Executive' },
   { value: 'proud-member', label: 'Proud Mention Member' }
-]
+];
 
 export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [selectedRole, setSelectedRole] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !password || !selectedRole) return
+    e.preventDefault();
+    if (!email || !password || !selectedRole) return;
 
-    setIsLoading(true)
-    // Simulate API call
+    setIsLoading(true);
     setTimeout(() => {
-      onLogin(email, password, selectedRole)
-      setIsLoading(false)
-      onClose()
-      setEmail('')
-      setPassword('')
-      setSelectedRole('')
-    }, 1000)
-  }
+      onLogin(email, password, selectedRole);
+      setIsLoading(false);
+      onClose();
+      setEmail('');
+      setPassword('');
+      setSelectedRole('');
+    }, 1000);
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -64,13 +74,16 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
             Access your club dashboard and exclusive content
           </p>
         </CardHeader>
-        
+
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
+            <div>
+              <Label htmlFor="email" className="mb-1 block">
+                Email
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -82,11 +95,14 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                 />
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+
+            {/* Password */}
+            <div>
+              <Label htmlFor="password" className="mb-1 block">
+                Password
+              </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
@@ -98,11 +114,14 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                 />
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+
+            {/* Role */}
+            <div>
+              <Label htmlFor="role" className="mb-1 block">
+                Role
+              </Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select value={selectedRole} onValueChange={setSelectedRole} required>
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="Select your role" />
@@ -117,7 +136,8 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                 </Select>
               </div>
             </div>
-            
+
+            {/* Submit Button */}
             <Button
               type="submit"
               className="w-full btn-hero"
@@ -136,7 +156,8 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
               )}
             </Button>
           </form>
-          
+
+          {/* Contact Admin */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Need an account?{' '}
@@ -148,5 +169,5 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
