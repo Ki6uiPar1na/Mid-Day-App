@@ -101,24 +101,25 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-5xl bg-[#42fff6]/30 backdrop-blur-xl text-white border border-white/20 shadow-lg">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Sign Up
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 text-white"
-              aria-label="Close signup modal"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-sm text-white/80">Create your club account</p>
+      <Card className="w-full  max-w-5xl bg-[#42fff6]/30 backdrop-blur-xl text-white border border-white/20 shadow-lg">
+        <CardHeader className="space-y-1 relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="absolute right-0 top-0 h-8 w-8 p-0 text-white"
+            aria-label="Close signup modal"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent text-center">
+            Sign Up
+          </CardTitle>
+
+          <p className="text-sm text-white/80 text-center">Create your club account</p>
         </CardHeader>
+
 
         <CardContent>
           <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
@@ -199,6 +200,7 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
                   )}
                 </div>
 
+                <div className='py-4'>
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary/80 text-white mt-2"
@@ -213,6 +215,7 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
                     'Sign Up'
                   )}
                 </Button>
+                </div>
               </div>
             </div>
           </form>
