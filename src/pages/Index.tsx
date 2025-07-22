@@ -40,7 +40,7 @@ const Index = () => {
       <GeneralMembersSection />
       <AchievementsSection />
 
-      {isLoggedIn && <ContestsSection />}
+      <ContestsSection />
 
       <GallerySection />
       <NoticeSection />
