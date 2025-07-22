@@ -54,11 +54,11 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <Card className="w-full max-w-md card-glow">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-primary from-primary to-secondary bg-clip-text text-transparent">
               Club Login
             </CardTitle>
             <Button
