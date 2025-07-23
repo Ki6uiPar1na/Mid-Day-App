@@ -6,8 +6,8 @@ type HeaderProps = {
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   onOpenLogin: () => void;
-  onLogout: () => void;        // Added onLogout here
-  userEmail?: string;          // Optional user email to display
+  onLogout: () => void;
+  userEmail?: string;
 };
 
 const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }: HeaderProps) => {
@@ -22,10 +22,16 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }:
     { name: 'Achievements', href: '#achievements' },
     { name: 'Contests', href: '#contests' },
     { name: 'Gallery', href: '#gallery' },
-    { name: 'Notice', href: '#notice' },
+    { name: 'Notice', href: '#notice' }
   ];
 
   const scrollToSection = (href: string) => {
+    if (href === '#contests' && !isLoggedIn) {
+      onOpenLogin();
+      setIsMenuOpen(false);
+      return;
+    }
+
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });

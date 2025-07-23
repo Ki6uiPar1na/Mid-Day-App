@@ -135,7 +135,7 @@ const Index = () => {
       <ExecutivesSection />
       <GeneralMembersSection />
       <AchievementsSection />
-      <ContestsSection />
+      {isLoggedIn && <ContestsSection />}
       <GallerySection />
       <NoticeSection />
       <Footer />
