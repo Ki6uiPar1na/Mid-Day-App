@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from '@/components/ThemeToggle'; // ✅ Import the Theme Toggle
 
 type HeaderProps = {
   isLoggedIn: boolean;
@@ -55,7 +56,7 @@ const Header = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b shadow-elegant bg-[#befae9]/30 backdrop-blur-xl backdrop-saturate-150">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b shadow-elegant bg-[#befae9]/30 backdrop-blur-xl backdrop-saturate-150 dark:bg-[#0f0f0f]/60">
       <div className="container mx-auto px-4">
         {/* Top Bar */}
         <div className="py-4 border-b flex items-center justify-between">
@@ -68,7 +69,7 @@ const Header = ({
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mid Day Programming Club
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 dark:text-gray-300">
               Jatiya Kabi Kazi Nazrul Islam University, Trishal, Mymensingh
             </p>
             {isLoggedIn && userEmail && (
@@ -101,8 +102,10 @@ const Header = ({
               </div>
             </div>
 
-            {/* Desktop Auth Buttons */}
-            <div className="hidden lg:flex relative">
+            {/* Desktop Auth Buttons and Theme Toggle */}
+            <div className="hidden lg:flex items-center gap-4 relative">
+              <ThemeToggle /> {/* ✅ Dark/Light toggle */}
+
               {isLoggedIn ? (
                 <div className="relative">
                   <button
@@ -117,19 +120,19 @@ const Header = ({
                     />
                   </button>
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50 transition duration-200 ease-out transform origin-top animate-fade-in">
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50 transition duration-200 ease-out origin-top animate-fade-in dark:bg-gray-800 dark:text-white">
                       <button
                         onClick={() => {
                           window.location.href = '/profile';
                           setIsUserMenuOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition duration-200"
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
                       >
                         Profile
                       </button>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition duration-200"
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
                       >
                         Logout
                       </button>
@@ -166,6 +169,10 @@ const Header = ({
           {/* Mobile Nav */}
           {isMenuOpen && (
             <div className="lg:hidden mt-4 space-y-4 pb-4 border-t pt-4">
+              <div className="flex justify-end pr-2">
+                <ThemeToggle /> {/* ✅ Mobile Theme Toggle */}
+              </div>
+
               {navItems.map((item) => (
                 <button
                   key={item.name}
