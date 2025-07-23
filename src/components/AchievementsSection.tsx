@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Trophy, Medal, Award, Star, Target, Zap } from 'lucide-react';
 
 const AchievementsSection = () => {
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
   const achievements = [
     {
       title: "ICPC World Finals 2023",
@@ -69,6 +72,10 @@ const AchievementsSection = () => {
 
   const categories = ["All", "International", "Regional", "Global", "National"];
 
+  const filteredAchievements = selectedCategory === "All"
+    ? achievements
+    : achievements.filter((a) => a.category === selectedCategory);
+
   return (
     <section id="achievements" className="py-20 bg-gradient-card">
       <div className="container mx-auto px-4">
@@ -87,9 +94,10 @@ const AchievementsSection = () => {
           {categories.map((category) => (
             <Button
               key={category}
-              variant={category === "All" ? "default" : "outline"}
+              variant={category === selectedCategory ? "default" : "outline"}
               size="sm"
               className="hover:shadow-elegant transition-all duration-300"
+              onClick={() => setSelectedCategory(category)}
             >
               {category}
             </Button>
@@ -98,11 +106,13 @@ const AchievementsSection = () => {
 
         {/* Achievements Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {achievements.map((achievement, index) => (
-            <Card key={index} className="group hover:shadow-glow transition-all duration-500 transform hover:-translate-y-3 overflow-hidden">
+          {filteredAchievements.map((achievement, index) => (
+            <Card
+              key={index}
+              className="group hover:shadow-glow transition-all duration-500 transform hover:-translate-y-3 overflow-hidden"
+            >
               <div className={`h-2 bg-gradient-to-r ${achievement.gradient}`}></div>
               <CardContent className="p-6">
-                {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${achievement.gradient} flex items-center justify-center`}>
@@ -117,7 +127,6 @@ const AchievementsSection = () => {
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
                     {achievement.title}
@@ -127,7 +136,6 @@ const AchievementsSection = () => {
                   </p>
                 </div>
 
-                {/* Action */}
                 <div className="flex items-center justify-between">
                   <Button
                     variant="outline"
