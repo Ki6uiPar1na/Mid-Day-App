@@ -27,7 +27,7 @@ const schema = z
     email: z.string().email('Invalid email'),
     phone: z.string().min(1, 'Phone is required'),
     linkedin: z.string().optional(),
-    codolio: z.string().optional(),
+    github: z.string().optional(), // Changed from codolio
     codeforces: z.string().optional(),
     codechef: z.string().optional(),
     hackerrank: z.string().optional(),
@@ -55,7 +55,7 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
 
   useEffect(() => {
     if (isOpen) {
-      reset(); // Reset on open
+      reset();
       document.body.classList.add('overflow-hidden');
     } else {
       document.body.classList.remove('overflow-hidden');
@@ -101,7 +101,7 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <Card className="w-full  max-w-5xl bg-[#42fff6]/30 backdrop-blur-xl text-white border border-white/20 shadow-lg">
+      <Card className="w-full max-w-5xl bg-[#42fff6]/30 backdrop-blur-xl text-white border border-white/20 shadow-lg">
         <CardHeader className="space-y-1 relative">
           <Button
             variant="ghost"
@@ -116,10 +116,8 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent text-center">
             Sign Up
           </CardTitle>
-
           <p className="text-sm text-white/80 text-center">Create your club account</p>
         </CardHeader>
-
 
         <CardContent>
           <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
@@ -157,8 +155,8 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
                 <h3 className="text-lg font-semibold text-white/90">Platform Handles</h3>
 
                 <div>
-                  <Label className="text-white">Codolio</Label>
-                  <Input {...register('codolio')} className="bg-white/20 text-white" />
+                  <Label className="text-white">GitHub</Label>
+                  <Input {...register('github')} className="bg-white/20 text-white" />
                 </div>
 
                 <div>
@@ -200,7 +198,6 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
                   )}
                 </div>
 
-                <div className='py-4'>
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary/80 text-white mt-2"
@@ -215,7 +212,6 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
                     'Sign Up'
                   )}
                 </Button>
-                </div>
               </div>
             </div>
           </form>
@@ -224,4 +220,3 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
     </div>
   );
 }
-export default SignUpModal;

@@ -76,7 +76,7 @@ export function LoginModal({
     setResetStatus('Sending reset email...');
 
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: 'http://192.168.100.113:8080/update-password', // 🔸 Customize this
+      redirectTo: 'http://localhost:8080/update-password', // 🔸 Customize this
     });
 
     if (error) {

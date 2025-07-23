@@ -8,10 +8,19 @@ type HeaderProps = {
   onOpenLogin: () => void;
   onLogout: () => void;
   userEmail?: string;
+  userAvatarUrl?: string;
 };
 
-const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }: HeaderProps) => {
+const Header = ({
+  isLoggedIn,
+  setIsLoggedIn,
+  onOpenLogin,
+  onLogout,
+  userEmail,
+  userAvatarUrl
+}: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const navItems = [
     { name: 'Home', href: '#home' },
@@ -41,6 +50,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }:
 
   const handleLogout = () => {
     onLogout();
+    setIsUserMenuOpen(false);
     setIsMenuOpen(false);
   };
 
@@ -92,23 +102,46 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }:
             </div>
 
             {/* Desktop Auth Buttons */}
-            <div className="hidden lg:flex">
+            <div className="hidden lg:flex relative">
               {isLoggedIn ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-primary transition duration-200"
+                    aria-label="User Menu"
+                  >
+                    <img
+                      src={userAvatarUrl || '/images/default-avatar.png'}
+                      alt="User Avatar"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  </button>
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50 transition duration-200 ease-out transform origin-top animate-fade-in">
+                      <button
+                        onClick={() => {
+                          window.location.href = '/profile';
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition duration-200"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition duration-200"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Button
                   variant="default"
                   size="sm"
                   onClick={onOpenLogin}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 transition duration-200 hover:scale-[1.02]"
                 >
                   <User className="h-4 w-4" />
                   Login
@@ -144,21 +177,36 @@ const Header = ({ isLoggedIn, setIsLoggedIn, onOpenLogin, onLogout, userEmail }:
               ))}
 
               {isLoggedIn ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 mt-4"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
+                <div className="flex items-center gap-2 mt-4">
+                  <img
+                    src={userAvatarUrl || '/images/default-avatar.png'}
+                    alt="User Avatar"
+                    className="h-8 w-8 rounded-full object-cover hover:ring-2 hover:ring-primary transition duration-200"
+                  />
+                  <div className="flex flex-col ml-2">
+                    <button
+                      onClick={() => {
+                        window.location.href = '/profile';
+                        setIsMenuOpen(false);
+                      }}
+                      className="text-sm text-left hover:text-primary transition duration-200"
+                    >
+                      Go to Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="text-sm text-left hover:text-primary mt-1 transition duration-200"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <Button
                   variant="default"
                   size="sm"
                   onClick={onOpenLogin}
-                  className="flex items-center gap-2 mt-4"
+                  className="flex items-center gap-2 mt-4 transition duration-200 hover:scale-[1.02]"
                 >
                   <User className="h-4 w-4" />
                   Login

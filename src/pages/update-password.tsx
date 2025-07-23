@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -13,20 +14,19 @@ import {
 import { Lock } from 'lucide-react';
 
 export default function UpdatePassword() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
-    // Check if session exists for password reset
     const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        setStatus('Missing or expired session. Please try reset link again.');
+        setStatus('❌ Missing or expired session. Please try the reset link again.');
       }
       setSessionChecked(true);
     };
@@ -47,9 +47,10 @@ export default function UpdatePassword() {
     } else {
       setStatus('✅ Password updated successfully!');
       setTimeout(() => {
-        router.push('/'); // Redirect to login or home
+        navigate('/'); // Redirect to home page
       }, 2000);
     }
+
     setIsSubmitting(false);
   };
 
