@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AdminLayout } from "../AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Trophy, Plus, Link as LinkIcon, Calendar, Clock } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ export function HostContest() {
     contestName: "",
     topic: "",
     contestType: "",
-    token: "",
+    status: "",
     difficulty: "",
     learningResources: ["", "", ""],
     startTime: "",
@@ -33,17 +34,14 @@ export function HostContest() {
       const start = new Date(formData.startTime);
       const end = new Date(formData.endTime);
       const diff = end.getTime() - start.getTime();
-      
       if (diff > 0) {
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
         let durationText = "";
         if (days > 0) durationText += `${days}d `;
         if (hours > 0) durationText += `${hours}h `;
         if (minutes > 0) durationText += `${minutes}m`;
-        
         setDuration(durationText.trim() || "0m");
       } else {
         setDuration("Invalid duration");
@@ -53,30 +51,54 @@ export function HostContest() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     calculateDuration();
   }, [formData.startTime, formData.endTime]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleResourceChange = (index: number, value: string) => {
     const newResources = [...formData.learningResources];
     newResources[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      learningResources: newResources
-    }));
+    setFormData((prev) => ({ ...prev, learningResources: newResources }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating contest:", formData);
-    // Here you would make API call to create contest
+    try {
+      const { error } = await supabase.from("contests").insert([
+        {
+          contest_name: formData.contestName,
+          topic: formData.topic,
+          contest_type: formData.contestType,
+          status: formData.status,
+          difficulty: formData.difficulty,
+          learning_resources: formData.learningResources,
+          start_time: formData.startTime,
+          end_time: formData.endTime,
+        },
+      ]);
+      if (error) throw error;
+
+      alert("Contest created successfully!");
+
+      setFormData({
+        contestName: "",
+        topic: "",
+        contestType: "",
+        status: "",
+        difficulty: "",
+        learningResources: ["", "", ""],
+        startTime: "",
+        endTime: "",
+      });
+      setDuration("");
+    } catch (err: any) {
+      console.error("Error creating contest:", err);
+      alert("Error creating contest: " + err.message);
+    }
   };
 
   return (
@@ -94,12 +116,11 @@ export function HostContest() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
+              {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="contestName">Contest Name *</Label>
+                  <Label>Contest Name *</Label>
                   <Input
-                    id="contestName"
                     placeholder="e.g., JKKNIU Weekly Contest #15"
                     value={formData.contestName}
                     onChange={(e) => handleInputChange("contestName", e.target.value)}
@@ -107,12 +128,10 @@ export function HostContest() {
                     className="bg-background/50"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="topic">Topic *</Label>
+                  <Label>Topic *</Label>
                   <Input
-                    id="topic"
-                    placeholder="e.g., Dynamic Programming, Graph Theory"
+                    placeholder="e.g., Graph Theory"
                     value={formData.topic}
                     onChange={(e) => handleInputChange("topic", e.target.value)}
                     required
@@ -121,26 +140,26 @@ export function HostContest() {
                 </div>
               </div>
 
-              {/* Contest Type and Status */}
+              {/* Contest Type, Status, Difficulty */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="contestType">Contest Type *</Label>
-                  <Select onValueChange={(value) => handleInputChange("contestType", value)} required>
+                  <Label>Contest Type *</Label>
+                  <Select onValueChange={(v) => handleInputChange("contestType", v)}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue placeholder="Select contest type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="jkkniu-weekly">JKKNIU Weekly Contest</SelectItem>
-                      <SelectItem value="jkkniu-monthly">JKKNIU Monthly Contest</SelectItem>
-                      <SelectItem value="team-formation">Team Formation Contest</SelectItem>
-                      <SelectItem value="weekly-long">Weekly Long Contest</SelectItem>
+                      <SelectItem value="jkkniu-weekly">JKKNIU Weekly</SelectItem>
+                      <SelectItem value="jkkniu-monthly">JKKNIU Monthly</SelectItem>
+                      <SelectItem value="team-formation">Team Formation</SelectItem>
+                      <SelectItem value="weekly-long">Weekly Long</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="token">Status *</Label>
-                  <Select onValueChange={(value) => handleInputChange("token", value)} required>
+                  <Label>Status *</Label>
+                  <Select onValueChange={(v) => handleInputChange("status", v)}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -153,8 +172,8 @@ export function HostContest() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="difficulty">Difficulty *</Label>
-                  <Select onValueChange={(value) => handleInputChange("difficulty", value)} required>
+                  <Label>Difficulty *</Label>
+                  <Select onValueChange={(v) => handleInputChange("difficulty", v)}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
@@ -167,23 +186,19 @@ export function HostContest() {
                 </div>
               </div>
 
-              {/* Learning Resources */}
+              {/* Resources */}
               <div className="space-y-4">
-                <Label className="text-base font-medium">Learning Resources (2-3 links)</Label>
-                {formData.learningResources.map((resource, index) => (
-                  <div key={index} className="space-y-2">
-                    <Label htmlFor={`resource-${index}`}>Resource {index + 1} {index < 2 ? "*" : ""}</Label>
-                    <div className="relative">
-                      <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id={`resource-${index}`}
-                        placeholder={`https://example.com/resource-${index + 1}`}
-                        value={resource}
-                        onChange={(e) => handleResourceChange(index, e.target.value)}
-                        required={index < 2}
-                        className="pl-10 bg-background/50"
-                      />
-                    </div>
+                <Label>Learning Resources (2-3 links)</Label>
+                {formData.learningResources.map((link, idx) => (
+                  <div key={idx} className="relative">
+                    <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      className="pl-10 bg-background/50"
+                      placeholder={`https://example.com/resource-${idx + 1}`}
+                      value={link}
+                      onChange={(e) => handleResourceChange(idx, e.target.value)}
+                      required={idx < 2}
+                    />
                   </div>
                 ))}
               </div>
@@ -191,37 +206,34 @@ export function HostContest() {
               {/* Timing */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time *</Label>
+                  <Label>Start Time *</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="startTime"
                       type="datetime-local"
+                      className="pl-10 bg-background/50"
                       value={formData.startTime}
                       onChange={(e) => handleInputChange("startTime", e.target.value)}
                       required
-                      className="pl-10 bg-background/50"
                     />
                   </div>
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">End Time *</Label>
+                  <Label>End Time *</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="endTime"
                       type="datetime-local"
+                      className="pl-10 bg-background/50"
                       value={formData.endTime}
                       onChange={(e) => handleInputChange("endTime", e.target.value)}
                       required
-                      className="pl-10 bg-background/50"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Duration Display */}
+              {/* Duration */}
               {duration && (
                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                   <div className="flex items-center gap-2">
@@ -232,11 +244,8 @@ export function HostContest() {
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Submit */}
               <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline">
-                  Save as Draft
-                </Button>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Contest
@@ -245,59 +254,7 @@ export function HostContest() {
             </form>
           </CardContent>
         </Card>
-
-        {/* Contest Preview */}
-        <Card className="bg-card/30 backdrop-blur border-border/30">
-          <CardHeader>
-            <CardTitle className="text-lg">Contest Preview</CardTitle>
-            <CardDescription>How your contest will appear to participants</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xl font-bold text-foreground">{formData.contestName || "Contest Name"}</h3>
-                <p className="text-muted-foreground">{formData.topic || "Contest Topic"}</p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {formData.contestType && (
-                  <span className="px-2 py-1 bg-primary/20 text-primary rounded text-sm">
-                    {formData.contestType.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
-                  </span>
-                )}
-                {formData.difficulty && (
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    formData.difficulty === "easy" ? "bg-success/20 text-success" :
-                    formData.difficulty === "medium" ? "bg-warning/20 text-warning" :
-                    "bg-destructive/20 text-destructive"
-                  }`}>
-                    {formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)}
-                  </span>
-                )}
-                {formData.token && (
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    formData.token === "upcoming" ? "bg-info/20 text-info" :
-                    formData.token === "active" ? "bg-success/20 text-success" :
-                    "bg-muted/20 text-muted-foreground"
-                  }`}>
-                    {formData.token.charAt(0).toUpperCase() + formData.token.slice(1)}
-                  </span>
-                )}
-              </div>
-              
-              {(formData.startTime || formData.endTime) && (
-                <div className="text-sm text-muted-foreground">
-                  {formData.startTime && <div>Starts: {new Date(formData.startTime).toLocaleString()}</div>}
-                  {formData.endTime && <div>Ends: {new Date(formData.endTime).toLocaleString()}</div>}
-                  {duration && <div>Duration: {duration}</div>}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </AdminLayout>
   );
 }
-
-import React from "react";
