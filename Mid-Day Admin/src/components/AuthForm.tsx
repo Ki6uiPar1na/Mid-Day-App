@@ -19,13 +19,14 @@ export function AuthForm({ onLoginSuccess }: { onLoginSuccess: (email: string) =
     const trimmedEmail = email.trim().toLowerCase();
 
     if (isLogin) {
-      // ✅ LOGIN using Supabase Auth
-      const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      });
+      const { data, error: fetchError } = await supabase
+        .from('admin_credential')
+        .select('*')
+        .eq('email', trimmedEmail)
+        .eq('password', password)
+        .single();
 
-      if (loginError) {
+      if (fetchError || !data) {
         setError('Invalid email or password');
         return;
       }
@@ -34,18 +35,27 @@ export function AuthForm({ onLoginSuccess }: { onLoginSuccess: (email: string) =
       onLoginSuccess(trimmedEmail);
       navigate('/admin/dashboard');
     } else {
-      // ✅ SIGNUP using Supabase Auth
-      const { data, error: signupError } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password,
-      });
+      const { data: existingUser } = await supabase
+        .from('admin_credential')
+        .select('id')
+        .eq('email', trimmedEmail)
+        .single();
 
-      if (signupError) {
-        setError(signupError.message);
+      if (existingUser) {
+        setError('Email already registered. Please login.');
         return;
       }
 
-      setMessage('Account created! Please check your email to confirm your account.');
+      const { error: insertError } = await supabase
+        .from('admin_credential')
+        .insert([{ email: trimmedEmail, password }]);
+
+      if (insertError) {
+        setError(insertError.message);
+        return;
+      }
+
+      setMessage('Account created! Please login.');
       setIsLogin(true);
     }
   };
