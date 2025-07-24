@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { AdminLayout } from "../AdminLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Info, Upload, Save, Eye } from "lucide-react";
+
+import { supabase } from "../../lib/supabaseClient"; // adjust path if needed
 
 export function AboutSection() {
   const [formData, setFormData] = useState({
@@ -16,18 +24,20 @@ export function AboutSection() {
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, image: file }));
+      setFormData((prev) => ({ ...prev, image: file }));
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -36,9 +46,62 @@ export function AboutSection() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updating about section:", formData);
+
+    if (!formData.image) {
+      setMessage("Please upload an image.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      // Upload image to Supabase Storage
+      const fileExt = formData.image.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("about-images")
+        .upload(filePath, formData.image);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL of the uploaded image
+      const { data } = supabase.storage.from("about-images").getPublicUrl(filePath);
+
+      // Insert data into Supabase table
+      const { error: insertError } = await supabase
+        .from("about_section")
+        .insert({
+          name: formData.name,
+          designation: formData.designation,
+          speech: formData.speech,
+          image_url: data.publicUrl,
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      setMessage("About section updated successfully!");
+      // Clear form or keep as is, your choice
+      setFormData({
+        name: "",
+        designation: "",
+        speech: "",
+        image: null,
+      });
+      setImagePreview("");
+    } catch (error: any) {
+      setMessage(`Error: ${error.message}`);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -51,7 +114,8 @@ export function AboutSection() {
               Update About Section
             </CardTitle>
             <CardDescription>
-              Manage the about page content including leadership profiles and organizational information.
+              Manage the about page content including leadership profiles and
+              organizational information.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -77,7 +141,9 @@ export function AboutSection() {
                       id="designation"
                       placeholder="e.g., President, Advisor, Faculty Member"
                       value={formData.designation}
-                      onChange={(e) => handleInputChange("designation", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("designation", e.target.value)
+                      }
                       required
                       className="bg-background/50"
                     />
@@ -113,7 +179,7 @@ export function AboutSection() {
                           variant="outline"
                           onClick={() => {
                             setImagePreview("");
-                            setFormData(prev => ({ ...prev, image: null }));
+                            setFormData((prev) => ({ ...prev, image: null }));
                           }}
                         >
                           Remove Image
@@ -123,7 +189,9 @@ export function AboutSection() {
                       <div className="space-y-4">
                         <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                         <div>
-                          <p className="text-foreground font-medium">Upload Profile Image</p>
+                          <p className="text-foreground font-medium">
+                            Upload Profile Image
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             Recommended: 400x400px, Max 2MB
                           </p>
@@ -142,15 +210,24 @@ export function AboutSection() {
               </div>
 
               <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" disabled={loading}>
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={loading}
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  Update About Section
+                  {loading ? "Updating..." : "Update About Section"}
                 </Button>
               </div>
+              {message && (
+                <p className={`mt-4 text-center ${message.startsWith("Error") ? "text-red-500" : "text-green-500"}`}>
+                  {message}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>

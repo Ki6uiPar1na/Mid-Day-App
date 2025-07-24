@@ -17,6 +17,8 @@ import { MemberInfo } from "./components/admin/MemberInfo";
 import { Achievements } from "./components/admin/Achievements";
 import { Gallery } from "./components/admin/Gallery";
 import { NoticeBoard } from "./components/admin/NoticeBoard";
+import { AdminDashboard } from "../src/components/AdminDashboard";
+import { AuthForm } from "./components/AuthForm"; // 👈 Add this
 
 const queryClient = new QueryClient();
 
@@ -27,8 +29,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* default to login */}
+          <Route path="/" element={<AuthForm onLoginSuccess={(email) => console.log(`Logged in as: ${email}`)} />} />
           <Route path="/admin" element={<Index />} />
+          <Route path="/admin/login" element={<AuthForm onLoginSuccess={(email) => console.log(`Logged in as: ${email}`)} />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/member-approval" element={<MemberApproval />} />
           <Route path="/admin/promote-executive" element={<PromoteExecutive />} />
           <Route path="/admin/remove-membership" element={<RemoveMembership />} />
@@ -41,7 +46,6 @@ const App = () => (
           <Route path="/admin/achievements" element={<Achievements />} />
           <Route path="/admin/gallery" element={<Gallery />} />
           <Route path="/admin/notice-board" element={<NoticeBoard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
