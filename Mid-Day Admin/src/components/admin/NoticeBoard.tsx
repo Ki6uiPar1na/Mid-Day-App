@@ -1,40 +1,146 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "../AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Save, Eye, Calendar, Link } from "lucide-react";
+import { Bell, Save, Eye, Calendar, Link, Trash2, Edit2 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient"; // Adjust the path to your supabase client
 
 export function NoticeBoard() {
   const [formData, setFormData] = useState({
+    id: null as number | null,
     date: "",
     title: "",
-    shortDescription: "",
+    short_description: "",
     link: "",
   });
 
+  const [notices, setNotices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Load all notices on mount
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
+  const fetchNotices = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("notices")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) {
+      alert("Error fetching notices: " + error.message);
+    } else {
+      setNotices(data || []);
+    }
+    setLoading(false);
+  };
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = () => {
+    setFormData({
+      id: null,
+      date: "",
+      title: "",
+      short_description: "",
+      link: "",
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Adding notice:", formData);
+
+    // Validate required fields (date, title, short_description)
+    if (!formData.date || !formData.title || !formData.short_description) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    if (formData.id) {
+      // UPDATE existing notice
+      const { error } = await supabase
+        .from("notices")
+        .update({
+          date: formData.date,
+          title: formData.title,
+          short_description: formData.short_description,
+          link: formData.link || null,
+        })
+        .eq("id", formData.id);
+
+      if (error) {
+        alert("Failed to update notice: " + error.message);
+      } else {
+        alert("Notice updated successfully!");
+        resetForm();
+        fetchNotices();
+      }
+    } else {
+      // CREATE new notice
+      const { error } = await supabase
+        .from("notices")
+        .insert([
+          {
+            date: formData.date,
+            title: formData.title,
+            short_description: formData.short_description,
+            link: formData.link || null,
+          },
+        ]);
+
+      if (error) {
+        alert("Failed to add notice: " + error.message);
+      } else {
+        alert("Notice added successfully!");
+        resetForm();
+        fetchNotices();
+      }
+    }
+  };
+
+  const handleEdit = (notice: any) => {
+    setFormData({
+      id: notice.id,
+      date: notice.date,
+      title: notice.title,
+      short_description: notice.short_description,
+      link: notice.link || "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this notice?")) return;
+
+    const { error } = await supabase.from("notices").delete().eq("id", id);
+
+    if (error) {
+      alert("Failed to delete notice: " + error.message);
+    } else {
+      alert("Notice deleted successfully!");
+      fetchNotices();
+    }
   };
 
   return (
     <AdminLayout title="Notice Board Management">
       <div className="space-y-6">
+        {/* Form Card */}
         <Card className="bg-card/50 backdrop-blur border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Change Notice Board
+              {formData.id ? "Edit Notice" : "Add New Notice"}
             </CardTitle>
             <CardDescription>
               Update notices on the website to keep members informed about important announcements and updates.
@@ -43,7 +149,6 @@ export function NoticeBoard() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Form Fields */}
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="date">Date *</Label>
@@ -73,12 +178,12 @@ export function NoticeBoard() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="shortDescription">Short Description *</Label>
+                    <Label htmlFor="short_description">Short Description *</Label>
                     <Textarea
-                      id="shortDescription"
+                      id="short_description"
                       placeholder="Brief description of the notice..."
-                      value={formData.shortDescription}
-                      onChange={(e) => handleInputChange("shortDescription", e.target.value)}
+                      value={formData.short_description}
+                      onChange={(e) => handleInputChange("short_description", e.target.value)}
                       required
                       rows={6}
                       className="bg-background/50"
@@ -120,23 +225,30 @@ export function NoticeBoard() {
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                     <h4 className="font-medium text-primary mb-2">Notice Categories</h4>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p><strong>Urgent:</strong> Immediate action required</p>
-                      <p><strong>General:</strong> Information and updates</p>
-                      <p><strong>Events:</strong> Upcoming activities</p>
-                      <p><strong>Academic:</strong> Contest and competition related</p>
+                      <p>
+                        <strong>Urgent:</strong> Immediate action required
+                      </p>
+                      <p>
+                        <strong>General:</strong> Information and updates
+                      </p>
+                      <p>
+                        <strong>Events:</strong> Upcoming activities
+                      </p>
+                      <p>
+                        <strong>Academic:</strong> Contest and competition related
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Clear
                 </Button>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   <Save className="h-4 w-4 mr-2" />
-                  Update Notice
+                  {formData.id ? "Update Notice" : "Add Notice"}
                 </Button>
               </div>
             </form>
@@ -144,7 +256,7 @@ export function NoticeBoard() {
         </Card>
 
         {/* Preview Card */}
-        {(formData.title || formData.shortDescription) && (
+        {(formData.title || formData.short_description) && (
           <Card className="bg-card/30 backdrop-blur border-border/30">
             <CardHeader>
               <CardTitle>Preview</CardTitle>
@@ -165,12 +277,12 @@ export function NoticeBoard() {
                         {formData.title || "Notice Title"}
                       </h3>
                       <p className="text-muted-foreground">
-                        {formData.shortDescription || "Notice description will appear here..."}
+                        {formData.short_description || "Notice description will appear here..."}
                       </p>
                       {formData.link && (
-                        <a 
-                          href={formData.link} 
-                          target="_blank" 
+                        <a
+                          href={formData.link}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
                         >
@@ -185,6 +297,46 @@ export function NoticeBoard() {
             </CardContent>
           </Card>
         )}
+
+        {/* List all notices */}
+        <Card className="bg-card/50 backdrop-blur border-border/50 mt-6">
+          <CardHeader>
+            <CardTitle>All Notices {loading && "(Loading...)"}</CardTitle>
+            <CardDescription>Manage existing notices here</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {notices.length === 0 && !loading && <p>No notices found.</p>}
+            <ul className="space-y-4">
+              {notices.map((notice) => (
+                <li
+                  key={notice.id}
+                  className="border border-muted-foreground/20 rounded p-4 flex justify-between items-center"
+                >
+                  <div>
+                    <h4 className="font-semibold text-foreground">{notice.title}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(notice.date).toLocaleDateString()} - {notice.short_description}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(notice)}>
+                      <Edit2 className="h-4 w-4" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(notice.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
