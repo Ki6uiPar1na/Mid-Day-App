@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "../AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,16 +6,53 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Save, Eye, X, Plus, Calendar, Link } from "lucide-react";
+import { Trophy, Save, Eye, X, Plus, Calendar, Link, Edit, Trash2 } from "lucide-react";
+
+import { supabase } from "../../lib/supabaseClient";
+
+type Achievement = {
+  id: number;
+  title: string;
+  short_description: string;
+  date: string;
+  link: string | null;
+  tags: string[];
+};
 
 export function Achievements() {
   const [formData, setFormData] = useState({
+    id: null as number | null,
     title: "",
     shortDescription: "",
     date: "",
     link: "",
     tags: [""],
   });
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Fetch all achievements on mount
+  useEffect(() => {
+    fetchAchievements();
+  }, []);
+
+  async function fetchAchievements() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("achievements")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) {
+      setMessage(`Error fetching achievements: ${error.message}`);
+    } else {
+      setAchievements((data as Achievement[]) || []);
+      setMessage("");
+    }
+    setLoading(false);
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -52,9 +89,91 @@ export function Achievements() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = () => {
+    setFormData({
+      id: null,
+      title: "",
+      shortDescription: "",
+      date: "",
+      link: "",
+      tags: [""],
+    });
+    setIsEditing(false);
+    setMessage("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Adding achievement:", formData);
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const tagsFiltered = formData.tags.filter(tag => tag.trim() !== "");
+
+      if (isEditing && formData.id !== null) {
+        // UPDATE
+        const { error } = await supabase
+          .from("achievements")
+          .update({
+            title: formData.title,
+            short_description: formData.shortDescription,
+            date: formData.date,
+            link: formData.link || null,
+            tags: tagsFiltered,
+          })
+          .eq("id", formData.id);
+
+        if (error) throw error;
+        setMessage("Achievement updated successfully!");
+      } else {
+        // CREATE
+        const { error } = await supabase.from("achievements").insert({
+          title: formData.title,
+          short_description: formData.shortDescription,
+          date: formData.date,
+          link: formData.link || null,
+          tags: tagsFiltered,
+        });
+
+        if (error) throw error;
+        setMessage("Achievement added successfully!");
+      }
+      resetForm();
+      await fetchAchievements();
+    } catch (error: any) {
+      setMessage(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (achievement: Achievement) => {
+    setFormData({
+      id: achievement.id,
+      title: achievement.title,
+      shortDescription: achievement.short_description,
+      date: achievement.date,
+      link: achievement.link || "",
+      tags: achievement.tags.length ? achievement.tags : [""],
+    });
+    setIsEditing(true);
+    setMessage("");
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this achievement?")) return;
+
+    setLoading(true);
+    setMessage("");
+
+    const { error } = await supabase.from("achievements").delete().eq("id", id);
+    if (error) {
+      setMessage(`Delete failed: ${error.message}`);
+    } else {
+      setMessage("Achievement deleted successfully!");
+      await fetchAchievements();
+    }
+    setLoading(false);
   };
 
   const validTags = formData.tags.filter(tag => tag.trim() !== "");
@@ -62,11 +181,12 @@ export function Achievements() {
   return (
     <AdminLayout title="Achievements Management">
       <div className="space-y-6">
+        {/* Form Card */}
         <Card className="bg-card/50 backdrop-blur border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5" />
-              Add Achievement
+              {isEditing ? "Edit Achievement" : "Add Achievement"}
             </CardTitle>
             <CardDescription>
               Post member or club achievements to showcase accomplishments and recognitions.
@@ -171,7 +291,7 @@ export function Achievements() {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Tags Preview */}
                   {validTags.length > 0 && (
                     <div className="space-y-2">
@@ -189,63 +309,102 @@ export function Achievements() {
               </div>
 
               <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={loading}
+                  onClick={() => {
+                    // Preview functionality - can be extended if needed
+                    alert(JSON.stringify(formData, null, 2));
+                  }}
+                >
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
+                <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={loading}>
                   <Save className="h-4 w-4 mr-2" />
-                  Add Achievement
+                  {loading ? (isEditing ? "Updating..." : "Adding...") : (isEditing ? "Update Achievement" : "Add Achievement")}
                 </Button>
+                {isEditing && (
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancel
+                  </Button>
+                )}
               </div>
+              {message && (
+                <p
+                  className={`mt-4 text-center ${
+                    message.startsWith("Error") ? "text-red-500" : "text-green-500"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>
 
-        {/* Preview Card */}
-        {(formData.title || formData.shortDescription || validTags.length > 0) && (
-          <Card className="bg-card/30 backdrop-blur border-border/30">
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-              <CardDescription>How this will appear on the website</CardDescription>
-            </CardHeader>
-            <CardContent>
+        {/* List of Achievements with Edit/Delete */}
+        <Card className="bg-card/30 backdrop-blur border-border/30 max-h-[600px] overflow-auto">
+          <CardHeader>
+            <CardTitle>All Achievements</CardTitle>
+            <CardDescription>Click edit to modify or delete an achievement.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p>Loading achievements...</p>
+            ) : achievements.length === 0 ? (
+              <p>No achievements found.</p>
+            ) : (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-foreground">
-                    {formData.title || "Achievement Title"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {formData.date || "Date"}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {formData.shortDescription || "Achievement description will appear here..."}
-                  </p>
-                  {formData.link && (
-                    <a 
-                      href={formData.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      <Link className="h-4 w-4" />
-                      View Details
-                    </a>
-                  )}
-                  {validTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {validTags.map((tag, index) => (
-                        <Badge key={index} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
+                {achievements.map((ach) => (
+                  <div
+                    key={ach.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border rounded-lg p-4"
+                  >
+                    <div>
+                      <h3 className="text-lg font-bold">{ach.title}</h3>
+                      <p className="text-sm text-muted-foreground">{ach.date}</p>
+                      <p>{ach.short_description}</p>
+                      {ach.link && (
+                        <a
+                          href={ach.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          <Link className="h-4 w-4" />
+                          View Details
+                        </a>
+                      )}
+                      {ach.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {ach.tags.map((tag, idx) => (
+                            <Badge key={idx} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(ach)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(ach.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
