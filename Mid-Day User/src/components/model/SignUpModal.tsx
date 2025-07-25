@@ -64,38 +64,44 @@ export function SignUpModal({ isOpen, onClose, onSubmit }: SignUpModalProps) {
   }, [isOpen, reset]);
 
   const onFormSubmit = async (data: FormData) => {
-    const { email, password, confirmPassword, ...profileData } = data;
+  const { email, password, confirmPassword, ...profileData } = data;
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password
-    });
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password
+  });
 
-    if (signUpError) {
-      setError('email', { message: signUpError.message });
-      return;
-    }
+  if (signUpError) {
+    setError('email', { message: signUpError.message });
+    return;
+  }
 
-    const user = signUpData.user;
-    if (!user) {
-      alert('User created but no user data returned');
-      return;
-    }
+  // Wait for email confirmation — might not return user immediately
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([{ id: user.id, email, ...profileData }]);
+  if (!user || userError) {
+    alert('User created, but not returned yet. Please verify your email and try logging in.');
+    return;
+  }
 
-    if (profileError) {
-      alert('Profile insert error: ' + profileError.message);
-      return;
-    }
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert([{ id: user.id, email: user.email ?? email, ...profileData }]);
 
-    alert('Signup successful! Check your email for verification.');
-    onSubmit(profileData);
-    reset();
-    onClose();
-  };
+  if (profileError) {
+    alert('Profile insert error: ' + profileError.message);
+    return;
+  }
+
+  alert('Signup successful! Check your email for verification.');
+  onSubmit(profileData);
+  reset();
+  onClose();
+};
+
 
   if (!isOpen) return null;
 
