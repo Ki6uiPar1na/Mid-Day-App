@@ -71,10 +71,9 @@ export function AboutSection() {
     setMessage("");
 
     try {
-      let imageUrl = imagePreview; // keep current preview URL by default
+      let imageUrl = imagePreview;
 
       if (formData.image) {
-        // New image uploaded, upload to storage and get public URL
         const fileExt = formData.image.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = fileName;
@@ -94,7 +93,6 @@ export function AboutSection() {
         imageUrl = publicUrlData.publicUrl;
       }
 
-
       if (editingId) {
         const { error: updateError } = await supabase
           .from("about_section")
@@ -109,12 +107,15 @@ export function AboutSection() {
         if (updateError) throw updateError;
         setMessage("About entry updated successfully.");
       } else {
-        const { error: insertError } = await supabase.from("about_section").insert({
-          name: formData.name,
-          designation: formData.designation,
-          speech: formData.speech,
-          image_url: imageUrl,
-        });
+        const { error: insertError } = await supabase.from("about_section").insert([
+            {
+              name: formData.name,
+              designation: formData.designation,
+              speech: formData.speech,
+              image_url: imageUrl,
+            }
+          ]);
+
 
         if (insertError) throw insertError;
         setMessage("About section created successfully!");
